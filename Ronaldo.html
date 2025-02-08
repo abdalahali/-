@@ -23,6 +23,8 @@
             margin-top: 50px;
             flex-wrap: wrap;
             justify-content: center;
+            position: relative;
+            z-index: 2;
         }
 
         button {
@@ -31,7 +33,7 @@
             cursor: pointer;
             border: none;
             border-radius: 25px;
-            transition: 0.3s;
+            transition: all 0.3s ease;
         }
 
         #ronaldo {
@@ -45,9 +47,10 @@
         }
 
         .heart-container {
-            margin-top: 50px;
-            position: relative;
-            transition: 0.5s;
+            margin-top: 20px; /* القلب يبدأ تحت الزرين مباشرة */
+            position: absolute;
+            transition: all 0.1s linear; /* حركة سريعة */
+            z-index: 1;
         }
 
         #heart {
@@ -56,7 +59,7 @@
             color: #ff4444;
             opacity: 0.5;
             pointer-events: none;
-            transition: 0.3s;
+            transition: all 0.2s ease;
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
@@ -68,12 +71,13 @@
         }
 
         #heart.expand {
-            animation: expand 1s forwards;
+            animation: gentleExpand 1.5s cubic-bezier(0.19, 1, 0.22, 1) forwards;
         }
 
-        @keyframes expand {
-            from { transform: scale(1) translateX(-50%); }
-            to { transform: scale(20) translateX(-50%); opacity: 0; }
+        @keyframes gentleExpand {
+            0% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.8); opacity: 1; }
+            100% { transform: translateX(-50%) scale(30); opacity: 0; }
         }
 
         @media (max-width: 600px) {
@@ -103,60 +107,75 @@
         const messiBtn = document.getElementById('messi');
         const heart = document.getElementById('heart');
         const container = document.querySelector('.heart-container');
+        const playersDiv = document.querySelector('.players');
         
         let selectedPlayer = null;
         let isMoving = false;
-        let moveInterval;
 
-        function getRandomPosition() {
-            const maxX = window.innerWidth - 50;
-            const maxY = window.innerHeight - 50;
+        // تحديد منطقة آمنة أسفل الأزرار
+        function getSafeArea() {
+            const playersRect = playersDiv.getBoundingClientRect();
             return {
-                x: Math.random() * maxX,
-                y: Math.random() * maxY
+                top: playersRect.bottom + 20, // مسافة 20px أسفل الأزرار
+                bottom: window.innerHeight - 50, // 50px من أسفل الشاشة
+                left: 50, // 50px من اليسار
+                right: window.innerWidth - 50 // 50px من اليمين
             };
         }
 
-        function moveHeart() {
+        // إنشاء موقع عشوائي ضمن المنطقة الآمنة
+        function getRandomPosition() {
+            const safeArea = getSafeArea();
+            return {
+                x: safeArea.left + Math.random() * (safeArea.right - safeArea.left),
+                y: safeArea.top + Math.random() * (safeArea.bottom - safeArea.top)
+            };
+        }
+
+        // تحريك القلب في اتجاه عشوائي بسرعة خاطفة
+        function moveHeartRandomly() {
             if (!isMoving) return;
-            
+
             const newPos = getRandomPosition();
-            const currentPos = container.getBoundingClientRect();
-            
-            // منع الخروج من الشاشة
-            if (newPos.x < 0) newPos.x = 0;
-            if (newPos.y < 0) newPos.y = 0;
-            if (newPos.x > window.innerWidth - 50) newPos.x = window.innerWidth - 50;
-            if (newPos.y > window.innerHeight - 50) newPos.y = window.innerHeight - 50;
-            
             container.style.left = newPos.x + 'px';
             container.style.top = newPos.y + 'px';
         }
 
+        // إعادة القلب إلى موقعه الطبيعي
         function resetHeartPosition() {
-            container.style.position = 'relative';
-            container.style.left = 'auto';
-            container.style.top = 'auto';
-            heart.style.left = '50%';
+            const safeArea = getSafeArea();
+            container.style.position = 'absolute';
+            container.style.left = '50%';
+            container.style.top = `${safeArea.top}px`;
+            container.style.transform = 'translateX(-50%)';
         }
 
+        // عند اختيار رونالدو
         ronaldoBtn.addEventListener('click', () => {
             selectedPlayer = 'ronaldo';
             isMoving = false;
-            clearInterval(moveInterval);
             resetHeartPosition();
             heart.classList.add('active');
+            container.style.transition = 'all 0.6s ease';
         });
 
+        // عند اختيار ميسي
         messiBtn.addEventListener('click', () => {
             selectedPlayer = 'messi';
             isMoving = true;
             container.style.position = 'fixed';
-            heart.style.left = '0';
-            moveInterval = setInterval(moveHeart, 1000);
+            container.style.transition = 'all 0.1s linear'; // حركة سريعة
             heart.classList.add('active');
         });
 
+        // عند محاولة الضغط على القلب
+        heart.addEventListener('mousedown', () => {
+            if (selectedPlayer === 'messi') {
+                moveHeartRandomly(); // تحريك القلب في اتجاه عشوائي
+            }
+        });
+
+        // عند الضغط على القلب (لرونالدو فقط)
         heart.addEventListener('click', () => {
             if (selectedPlayer === 'ronaldo') {
                 heart.classList.add('expand');
@@ -164,7 +183,7 @@
                     heart.classList.remove('expand');
                     heart.classList.remove('active');
                     selectedPlayer = null;
-                }, 1000);
+                }, 1500);
             }
         });
 
