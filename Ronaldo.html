@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>كريستيانو vs ميسي</title>
     <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+
         body {
             font-family: Arial, sans-serif;
             display: flex;
@@ -90,10 +94,14 @@
                 font-size: 40px;
             }
         }
-        #heart:focus {
-            outline: none;
-            box-shadow: none;
+       #heart:focus, #heart:active {
+            outline: none !important;
+            box-shadow: none !important;
+            background: transparent !important;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
+
         button:focus, #heart:focus {
             outline: none;
             box-shadow: none;
