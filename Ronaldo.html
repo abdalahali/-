@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>كريستيانو vs ميسي</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+            overflow-x: hidden;
+        }
+
+        .players {
+            display: flex;
+            gap: 20px;
+            margin-top: 50px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            border: none;
+            border-radius: 25px;
+            transition: 0.3s;
+        }
+
+        #ronaldo {
+            background-color: #ff4444;
+            color: white;
+        }
+
+        #messi {
+            background-color: #4477ff;
+            color: white;
+        }
+
+        .heart-container {
+            margin-top: 50px;
+            position: relative;
+            transition: 0.5s;
+        }
+
+        #heart {
+            font-size: 50px;
+            cursor: pointer;
+            color: #ff4444;
+            opacity: 0.5;
+            pointer-events: none;
+            transition: 0.3s;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #heart.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #heart.expand {
+            animation: expand 1s forwards;
+        }
+
+        @keyframes expand {
+            from { transform: scale(1) translateX(-50%); }
+            to { transform: scale(20) translateX(-50%); opacity: 0; }
+        }
+
+        @media (max-width: 600px) {
+            button {
+                width: 100%;
+                max-width: 200px;
+            }
+            
+            #heart {
+                font-size: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="players">
+        <button id="ronaldo">كريستيانو رونالدو</button>
+        <button id="messi">ليونيل ميسي</button>
+    </div>
+
+    <div class="heart-container">
+        <div id="heart">❤️</div>
+    </div>
+
+    <script>
+        const ronaldoBtn = document.getElementById('ronaldo');
+        const messiBtn = document.getElementById('messi');
+        const heart = document.getElementById('heart');
+        const container = document.querySelector('.heart-container');
+        
+        let selectedPlayer = null;
+        let isMoving = false;
+        let moveInterval;
+
+        function getRandomPosition() {
+            const maxX = window.innerWidth - 50;
+            const maxY = window.innerHeight - 50;
+            return {
+                x: Math.random() * maxX,
+                y: Math.random() * maxY
+            };
+        }
+
+        function moveHeart() {
+            if (!isMoving) return;
+            
+            const newPos = getRandomPosition();
+            const currentPos = container.getBoundingClientRect();
+            
+            // منع الخروج من الشاشة
+            if (newPos.x < 0) newPos.x = 0;
+            if (newPos.y < 0) newPos.y = 0;
+            if (newPos.x > window.innerWidth - 50) newPos.x = window.innerWidth - 50;
+            if (newPos.y > window.innerHeight - 50) newPos.y = window.innerHeight - 50;
+            
+            container.style.left = newPos.x + 'px';
+            container.style.top = newPos.y + 'px';
+        }
+
+        function resetHeartPosition() {
+            container.style.position = 'relative';
+            container.style.left = 'auto';
+            container.style.top = 'auto';
+            heart.style.left = '50%';
+        }
+
+        ronaldoBtn.addEventListener('click', () => {
+            selectedPlayer = 'ronaldo';
+            isMoving = false;
+            clearInterval(moveInterval);
+            resetHeartPosition();
+            heart.classList.add('active');
+        });
+
+        messiBtn.addEventListener('click', () => {
+            selectedPlayer = 'messi';
+            isMoving = true;
+            container.style.position = 'fixed';
+            heart.style.left = '0';
+            moveInterval = setInterval(moveHeart, 1000);
+            heart.classList.add('active');
+        });
+
+        heart.addEventListener('click', () => {
+            if (selectedPlayer === 'ronaldo') {
+                heart.classList.add('expand');
+                setTimeout(() => {
+                    heart.classList.remove('expand');
+                    heart.classList.remove('active');
+                    selectedPlayer = null;
+                }, 1000);
+            }
+        });
+
+        // إعادة الضبط عند تغيير حجم النافذة
+        window.addEventListener('resize', () => {
+            if (selectedPlayer === 'ronaldo') {
+                resetHeartPosition();
+            }
+        });
+    </script>
+</body>
+</html>
